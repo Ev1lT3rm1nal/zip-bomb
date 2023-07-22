@@ -1,0 +1,7 @@
+id: ah8gg7veru0unn8f4s4msawypia9qujzc1rw3d8ngxa7xysl
+name: zip-bomb
+license: MIT
+description: ""
+root_dependencies:
+
+  - src: git https://github.com/MasterQ32/zig-args

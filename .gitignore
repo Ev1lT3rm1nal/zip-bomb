@@ -1,0 +1,5 @@
+.zigmod/
+zig-cache/
+zig-out/
+*.zip
+zig-archive/

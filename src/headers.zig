@@ -266,7 +266,7 @@ pub const CentralDirectoryHeader = struct {
         if (zip64) {
             extra = ExtraDataMin{
                 .tag = 0x0001,
-                .size = 16,
+                .size = 8,
                 .uncompressed_size = self.uncompressed_size,
             };
         }

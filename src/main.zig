@@ -263,13 +263,14 @@ pub fn main() !void {
                     });
                 }
             }
-            std.mem.reverse(headers.FileRecord, files.items);
+            // std.mem.reverse(headers.FileRecord, files.items);
 
             var offset: usize = 0;
-
-            var central_directory = try std.ArrayList(headers.CentralDirectoryHeader).initCapacity(allocator, files.items.len);
+            var files_len = files.items.len;
+            var central_directory = try std.ArrayList(headers.CentralDirectoryHeader).initCapacity(allocator, files_len);
             defer central_directory.deinit();
-            for (files.items) |*file| {
+            for (0..files_len) |i| {
+                var file = &files.items[files_len - 1 - i];
                 try central_directory.append(headers.CentralDirectoryHeader.new(offset, file.header));
                 var header_bytes = try file.header.serialize(options.options.zip64, allocator);
                 defer allocator.free(header_bytes);

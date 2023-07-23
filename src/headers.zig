@@ -438,6 +438,6 @@ pub const EndOfCentralDirectory = struct {
                 std.mem.reverse(u8, &zip64_eocd_locator_bytes);
             }
         }
-        return try std.mem.concat(allocator, u8, &[3][]u8{ &eocd_record_bytes, zip64_eocd_record_bytes[0..trim_zip64_eocd_record_size], zip64_eocd_locator_bytes[0..trim_zip64_eocd_locator_size] });
+        return try std.mem.concat(allocator, u8, &[3][]u8{ zip64_eocd_record_bytes[0..trim_zip64_eocd_record_size], zip64_eocd_locator_bytes[0..trim_zip64_eocd_locator_size], &eocd_record_bytes });
     }
 };

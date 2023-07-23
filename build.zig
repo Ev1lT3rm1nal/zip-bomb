@@ -25,7 +25,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.strip = true;
+    // exe.strip = true;
 
     zig_archive.addModuleArchive(b, exe);
     deps.addAllTo(exe);

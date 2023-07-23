@@ -1,0 +1,3 @@
+[submodule "zig-archive"]
+	path = zig-archive
+	url = https://github.com/Ev1lT3rm1nal/zig-archive.git

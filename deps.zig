@@ -28,11 +28,11 @@ pub fn addAllTo(exe: *std.build.LibExeObjStep) void {
             llc = true;
         }
         for (pkg.c_include_dirs) |item| {
-            exe.addIncludePath(b.fmt("{s}/{s}", .{ @field(dirs, decl.name), item }));
+            exe.addIncludePath(.{.path = b.fmt("{s}/{s}", .{ @field(dirs, decl.name), item })});
             llc = true;
         }
         for (pkg.c_source_files) |item| {
-            exe.addCSourceFile(b.fmt("{s}/{s}", .{ @field(dirs, decl.name), item }), pkg.c_source_flags);
+            exe.addCSourceFile(.{ .file = .{ .path = b.fmt("{s}/{s}", .{ @field(dirs, decl.name), item }) }, .flags = pkg.c_source_flags });
             llc = true;
         }
         vcpkg = vcpkg or pkg.vcpkg;

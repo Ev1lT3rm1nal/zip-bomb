@@ -37,7 +37,7 @@ pub const matrix_choose = &[_]crc_data_type{ crc_m0, crc_m1 };
 pub const vector_identity: crc_data_type = @as(crc_data_type, @splat(@as(u64, 1))) << std.simd.iota(u64, 33);
 
 pub fn vector_mul_vector(m: crc_data_type, v: u64) u64 {
-    var vec = @select(u64, ((@as(crc_data_type, @splat(v)) >> comptime std.simd.iota(u64, 33)) %
+    const vec = @select(u64, ((@as(crc_data_type, @splat(v)) >> comptime std.simd.iota(u64, 33)) %
         comptime @as(crc_data_type, @splat(@as(u64, 2)))) ==
         comptime @as(crc_data_type, @splat(@as(u64, 1))), m, comptime @as(crc_data_type, @splat(@as(u64, 0))));
     return @reduce(.Xor, vec);
@@ -77,7 +77,7 @@ pub fn precompute_crc_matrix_repeated(data: []u8, n_1: usize) crc_data_type {
 }
 
 pub fn crc_matrix_apply(m: crc_data_type, value_1: ?u64) u64 {
-    var value = value_1 orelse 0;
+    const value = value_1 orelse 0;
 
     return (vector_mul_vector(m, (value ^ 0xffffffff) | comptime (1 << 32)) & 0xffffffff) ^ 0xffffffff;
 }
@@ -101,8 +101,8 @@ pub fn hash_data(data: []u8, n: usize) u32 {
 }
 
 pub fn memo_crc_matrix_repeated(data: []u8, n: usize) crc_data_type {
-    var key = hash_data(data, n);
-    var value = crc_cache_repeated.get(key);
+    const key = hash_data(data, n);
+    const value = crc_cache_repeated.get(key);
     var result: crc_data_type = undefined;
     if (value) |final| {
         result = final;

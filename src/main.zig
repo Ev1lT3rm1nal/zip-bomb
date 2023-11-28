@@ -25,6 +25,7 @@ pub fn filename_for_index(i_1: u64, allocator: std.mem.Allocator) ![]u8 {
             break;
         }
     }
+    try letters.insertSlice(0, "out/");
     return try letters.toOwnedSlice();
 }
 
@@ -124,11 +125,11 @@ pub fn main() !void {
 
             var out = try std.ArrayList(u8).initCapacity(allocator, @intCast(hdr.uncompressed_size));
 
-            var filename = try allocator.alloc(u8, hdr.filename.len);
+            const filename = try allocator.alloc(u8, hdr.filename.len);
 
             @memcpy(filename, hdr.filename);
 
-            var header = headers.LocalFileHeader.init(
+            const header = headers.LocalFileHeader.init(
                 hdr.compressed_size,
                 hdr.uncompressed_size,
                 hdr.crc32,
@@ -177,14 +178,14 @@ pub fn main() !void {
                 _ = extra_tag;
                 var sum: usize = 0;
                 while (sum <= 65535) {
-                    var filename = try filename_for_index(num_extra_files + 1, allocator);
+                    const filename = try filename_for_index(num_extra_files + 1, allocator);
                     defer allocator.free(filename);
                     sum += 30 + 4 + (if (options.options.zip64) @as(usize, 20) else @as(usize, 0)) + filename.len;
                     num_extra_files += 1;
                 }
             }
 
-            var header = headers.LocalFileHeader.init(
+            const header = headers.LocalFileHeader.init(
                 out.data.prefix.len + out.data.suffix.len + out.data.num_zeroes,
                 out.size,
                 @intCast(crc_u.crc_matrix_apply(out.crc_matrix, null)),
@@ -197,7 +198,7 @@ pub fn main() !void {
             const data_ptr = &zero_data;
             const slice = data_ptr[0..];
 
-            var crc_matrix = crc_u.precompute_crc_matrix_repeated(slice, out.size);
+            const crc_matrix = crc_u.precompute_crc_matrix_repeated(slice, out.size);
 
             var files = try std.ArrayList(headers.FileRecord).initCapacity(allocator, @intCast(options.options.@"num-files".?));
             defer {
@@ -209,7 +210,7 @@ pub fn main() !void {
 
             try files.append(.{ .header = header, .data = .{ .generated = out.data }, .crc_matrix = crc_matrix });
 
-            var method = headers.compression_method_deflate;
+            const method = headers.compression_method_deflate;
 
             while (method == headers.compression_method_deflate and files.items.len < (options.options.@"num-files".? - num_extra_files)) {
                 const files_len = files.items.len;
@@ -220,7 +221,7 @@ pub fn main() !void {
                 crc_quoted.update(header_bytes);
                 const next_file = files.items[files_len - 1];
                 for (1..files_len) |j| {
-                    var i = files_len - j;
+                    const i = files_len - j;
                     const file_i_header = try files.items[i - 1].header.serialize(options.options.zip64, allocator);
                     defer allocator.free(file_i_header);
                     if (num_quoted + files.items[i].data.size() + file_i_header.len > max_quoted) {
@@ -236,13 +237,13 @@ pub fn main() !void {
                     crc_quoted.update(file_i_header);
                 }
 
-                var new_crc = crc_u.crc_combine(crc_quoted.final(), @intCast(next_file.header.crc), next_file.crc_matrix);
+                const new_crc = crc_u.crc_combine(crc_quoted.final(), @intCast(next_file.header.crc), next_file.crc_matrix);
 
-                var new_crc_matrix = crc_u.matrix_mul(next_file.crc_matrix, crc_u.memo_crc_matrix_repeated(slice, num_quoted));
+                const new_crc_matrix = crc_u.matrix_mul(next_file.crc_matrix, crc_u.memo_crc_matrix_repeated(slice, num_quoted));
 
-                var quote = try headers.Quote.new(0x00, @intCast(num_quoted), @as(u16, @intCast(num_quoted)) ^ 0xffff).toBytes(allocator);
+                const quote = try headers.Quote.new(0x00, @intCast(num_quoted), @as(u16, @intCast(num_quoted)) ^ 0xffff).toBytes(allocator);
 
-                var new_header = headers.LocalFileHeader.init(
+                const new_header = headers.LocalFileHeader.init(
                     quote.len + num_quoted + next_file.header.compressed_size,
                     num_quoted + next_file.header.uncompressed_size,
                     @intCast(new_crc),
@@ -266,13 +267,13 @@ pub fn main() !void {
             // std.mem.reverse(headers.FileRecord, files.items);
 
             var offset: usize = 0;
-            var files_len = files.items.len;
+            const files_len = files.items.len;
             var central_directory = try std.ArrayList(headers.CentralDirectoryHeader).initCapacity(allocator, files_len);
             defer central_directory.deinit();
             for (0..files_len) |i| {
                 var file = &files.items[files_len - 1 - i];
                 try central_directory.append(headers.CentralDirectoryHeader.new(offset, file.header));
-                var header_bytes = try file.header.serialize(options.options.zip64, allocator);
+                const header_bytes = try file.header.serialize(options.options.zip64, allocator);
                 defer allocator.free(header_bytes);
                 offset += try stream.write(header_bytes);
                 switch (file.data) {
@@ -282,11 +283,11 @@ pub fn main() !void {
                     headers.RecordData.generated => |data| {
                         offset += try stream.write(data.prefix);
 
-                        const buff: [10 * 1024]u8 = comptime [_]u8{'\x00'} ** (10 * 1024);
+                        const buff = comptime [_]u8{'\x00'} ** (10 * 1024);
                         var left = data.num_zeroes;
 
                         while (left > 0) {
-                            var to_write = if (left < (10 * 1024))
+                            const to_write = if (left < (10 * 1024))
                                 left
                             else
                                 10 * 1024;
@@ -297,15 +298,15 @@ pub fn main() !void {
                     },
                 }
             }
-            var cd_offset = offset;
+            const cd_offset = offset;
             for (central_directory.items) |*cd_header| {
-                var cd_bytes = try cd_header.serialize(options.options.zip64, allocator);
+                const cd_bytes = try cd_header.serialize(options.options.zip64, allocator);
                 defer allocator.free(cd_bytes);
                 offset += try stream.write(cd_bytes);
             }
-            var cd_size = offset - cd_offset;
+            const cd_size = offset - cd_offset;
             var eocd = headers.EndOfCentralDirectory.new(central_directory.items.len, cd_size, cd_offset);
-            var eocd_bytes = try eocd.serialize(options.options.zip64, method, allocator);
+            const eocd_bytes = try eocd.serialize(options.options.zip64, method, allocator);
             defer allocator.free(eocd_bytes);
             offset += try stream.write(eocd_bytes);
         },
@@ -342,8 +343,8 @@ const QuotedOverlap = struct {
         var result = huffman_type.init(self.allocator);
         for (code_length.keys()) |sym| {
             // @setRuntimeSafety(true);
-            var length = code_length.get(sym).?;
-            var next_code_length = next_code.get(length) orelse 0;
+            const length = code_length.get(sym).?;
+            const next_code_length = next_code.get(length) orelse 0;
             std.debug.assert(next_code_length >> @intCast(length) == 0);
             try result.put(sym, .{ .@"0" = next_code_length, .@"1" = length });
             try next_code.put(length, next_code_length + 1);
@@ -372,13 +373,13 @@ const QuotedOverlap = struct {
             } else {
                 x = 138;
             }
-            var value = codes.get(18).?;
+            const value = codes.get(18).?;
             try bits.push_rev(@intCast(value[0]), @intCast(value[1]));
             try bits.push(@intCast(x - 11), 7);
             n -= x;
         }
         while (n > 0) : (n -= 1) {
-            var value = codes.get(0).?;
+            const value = codes.get(0).?;
             try bits.push(@intCast(value[0]), @intCast(value[1]));
         }
     }
@@ -386,12 +387,12 @@ const QuotedOverlap = struct {
     pub fn output_code_length_tree(self: *QuotedOverlap, code_length: std.AutoArrayHashMap(u64, u64), bits: *BitBuffer, codes: huffman_type) !void {
         var curr: u64 = 0;
         const asc_u64 = std.sort.asc(u64);
-        var sorted = code_length.keys();
+        const sorted = code_length.keys();
         std.sort.block(u64, sorted, {}, asc_u64);
         for (sorted) |sym| {
-            var length = code_length.get(sym).?;
+            const length = code_length.get(sym).?;
             try self.skip(sym - curr, bits, codes);
-            var value = codes.get(length).?;
+            const value = codes.get(length).?;
             try bits.push_rev(@intCast(value[0]), @intCast(value[1]));
             curr = sym + 1;
         }
@@ -447,7 +448,7 @@ const QuotedOverlap = struct {
         try self.output_code_length_tree(distance_lengths, &bits, code_length_codes);
 
         var n: usize = 0;
-        var value = ll_codes.get(repeated_byte).?;
+        const value = ll_codes.get(repeated_byte).?;
         try bits.push_rev(@intCast(value[0]), @intCast(value[1]));
         n += 1;
 
@@ -458,8 +459,8 @@ const QuotedOverlap = struct {
         const prefix: []u8 = try bits.bytes();
         bits.reset();
 
-        var distance = distance_codes.get(0).?;
-        var code_285 = ll_codes.get(285).?;
+        const distance = distance_codes.get(0).?;
+        const code_285 = ll_codes.get(285).?;
         if (!is_even) {
             try bits.push(@intCast(distance[0]), @intCast(distance[1]));
         }
@@ -474,11 +475,11 @@ const QuotedOverlap = struct {
                 try bits.push(@intCast(distance[0]), @intCast(distance[1]));
             }
         }
-        var code_256 = ll_codes.get(256).?;
+        const code_256 = ll_codes.get(256).?;
         try bits.push_rev(@intCast(code_256[0]), @intCast(code_256[1]));
-        var suffix: []u8 = try bits.bytes();
+        const suffix: []u8 = try bits.bytes();
 
-        var num_zeroes: usize = if (max_uncompressed_size) |max_size|
+        const num_zeroes: usize = if (max_uncompressed_size) |max_size|
             (@as(usize, @intCast(max_size)) - n) / 1032
         else
             @intCast(compressed_size.? - prefix.len - suffix.len);
@@ -489,7 +490,7 @@ const QuotedOverlap = struct {
         const data_ptr = &data;
         const slice = data_ptr[0..];
 
-        var crc_matrix = crc_u.precompute_crc_matrix_repeated(slice, n);
+        const crc_matrix = crc_u.precompute_crc_matrix_repeated(slice, n);
 
         //  return compressed_data, n, precompute_crc_matrix_repeated(bytes([repeated_byte]), n)
         return .{ .size = n, .crc_matrix = crc_matrix, .data = .{ .prefix = prefix, .suffix = suffix, .num_zeroes = num_zeroes } };

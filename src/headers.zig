@@ -38,10 +38,10 @@ pub const Quote = packed struct {
 
     pub fn toBytes(self: Quote, allocator: std.mem.Allocator) ![]u8 {
         var bytes: [@bitSizeOf(@This()) / 8]u8 = @bitCast(self);
-        if (comptime native_endian != .Little) {
+        if (comptime native_endian != .little) {
             std.mem.reverse(u8, &bytes);
         }
-        var result = try allocator.alloc(u8, @bitSizeOf(@This()) / 8);
+        const result = try allocator.alloc(u8, @bitSizeOf(@This()) / 8);
         @memcpy(result, &bytes);
         return result;
     }
@@ -115,7 +115,7 @@ pub const LocalFileHeader = struct {
         extra_tag: ?u16,
         extra_length_excess: ?u16,
     ) LocalFileHeader {
-        var self = .{
+        const self = .{
             .compressed_size = compressed_size,
             .uncompressed_size = uncompressed_size,
             .crc = crc,
@@ -154,11 +154,11 @@ pub const LocalFileHeader = struct {
                 .size = self.extra_length_excess,
             };
         }
-        var compressed_size: u32 = @max(if (zip64) @as(u32, 0xffffffff) else @as(u32, 0), @as(u32, @truncate(self.compressed_size)));
+        const compressed_size: u32 = @max(if (zip64) @as(u32, 0xffffffff) else @as(u32, 0), @as(u32, @truncate(self.compressed_size)));
         // std.debug.print("size {d}\n", .{self.uncompressed_size});
-        var uncompressed_size: u32 = @max(if (zip64) @as(u32, 0xffffffff) else @as(u32, 0), @as(u32, @truncate(self.uncompressed_size)));
+        const uncompressed_size: u32 = @max(if (zip64) @as(u32, 0xffffffff) else @as(u32, 0), @as(u32, @truncate(self.uncompressed_size)));
 
-        var header: FileHeaderData = .{
+        const header: FileHeaderData = .{
             .signature = 0x04034b50,
             .version = zip_version_num(self.compression_method, zip64),
             .flags = 0,
@@ -174,9 +174,9 @@ pub const LocalFileHeader = struct {
         var header_bytes: [@bitSizeOf(FileHeaderData) / 8]u8 = @bitCast(header);
         var extra_bytes: [extra_data_size]u8 = if (extra != null) @bitCast(extra.?) else [_]u8{0} ** (extra_data_size);
         var extra_length_bytes: [extra_length_size]u8 = if (extra_length != null) @bitCast(extra_length.?) else [_]u8{0} ** (extra_length_size);
-        var extra_length_bytes_size: usize = if (extra_length != null) extra_length_size else 0;
-        var extra_data_bytes_size: usize = if (extra != null) extra_data_size else 0;
-        if (comptime native_endian != .Little) {
+        const extra_length_bytes_size: usize = if (extra_length != null) extra_length_size else 0;
+        const extra_data_bytes_size: usize = if (extra != null) extra_data_size else 0;
+        if (comptime native_endian != .little) {
             std.mem.reverse(u8, &header_bytes);
 
             if (zip64) {
@@ -270,7 +270,7 @@ pub const CentralDirectoryHeader = struct {
                 .uncompressed_size = self.uncompressed_size,
             };
         }
-        var header = CentralDirectoryData{
+        const header = CentralDirectoryData{
             .signature = 0x02014b50,
             .version_by = (0 << 8) | zip_version_num(self.compression_method, zip64),
             .version = zip_version_num(self.compression_method, zip64),
@@ -291,8 +291,8 @@ pub const CentralDirectoryHeader = struct {
         };
         var header_bytes: [@bitSizeOf(CentralDirectoryData) / 8]u8 = @bitCast(header);
         var extra_bytes: [extra_data_size]u8 = if (extra != null) @bitCast(extra.?) else [_]u8{0} ** (extra_data_size);
-        var extra_data_bytes_size: usize = if (extra != null) extra_data_size else 0;
-        if (comptime native_endian != .Little) {
+        const extra_data_bytes_size: usize = if (extra != null) extra_data_size else 0;
+        if (comptime native_endian != .little) {
             std.mem.reverse(u8, &header_bytes);
 
             if (zip64) {
@@ -414,7 +414,7 @@ pub const EndOfCentralDirectory = struct {
             );
         }
 
-        var eocd_record = EOCDRecord.new(
+        const eocd_record = EOCDRecord.new(
             0x06054b50,
             0,
             0,
@@ -427,10 +427,10 @@ pub const EndOfCentralDirectory = struct {
         var eocd_record_bytes: [eocd_record_size]u8 = @bitCast(eocd_record);
         var zip64_eocd_record_bytes: [zip64_eocd_record_size]u8 = if (zip64_eocd_record != null) @bitCast(zip64_eocd_record.?) else [_]u8{0} ** (zip64_eocd_record_size);
         var zip64_eocd_locator_bytes: [zip64_eocd_locator_size]u8 = if (zip64_eocd_locator != null) @bitCast(zip64_eocd_locator.?) else [_]u8{0} ** (zip64_eocd_locator_size);
-        var trim_zip64_eocd_record_size: usize = if (zip64_eocd_record != null) zip64_eocd_record_size else 0;
-        var trim_zip64_eocd_locator_size: usize = if (zip64_eocd_locator != null) zip64_eocd_locator_size else 0;
+        const trim_zip64_eocd_record_size: usize = if (zip64_eocd_record != null) zip64_eocd_record_size else 0;
+        const trim_zip64_eocd_locator_size: usize = if (zip64_eocd_locator != null) zip64_eocd_locator_size else 0;
 
-        if (comptime native_endian != .Little) {
+        if (comptime native_endian != .little) {
             std.mem.reverse(u8, &eocd_record_bytes);
 
             if (zip64) {

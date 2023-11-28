@@ -1,0 +1,19 @@
+.{
+    .name = "zip-bomb",
+    .version = "0.0.0",
+
+    .dependencies = .{
+        .args = .{
+            .url = "https://github.com/MasterQ32/zig-args/archive/3797c1473b48e445d721d40c8fbbe9a7422095ae.tar.gz",
+            .hash = "122012fa395ee8ac94592f3a535ed3899a4485e96ee3d4ec8f82c761bf304b34b870",
+        },
+        .archive = .{
+            .url = "https://github.com/Ev1lT3rm1nal/zig-archive/archive/a22903b181b650d867dbebc8785b3cb937a3cc09.tar.gz",
+            .hash = "12203cdfe604d2d490bb47490f52c43ee282a6e96920b0b140a1a96bb968ac842d16",
+        },
+    },
+
+    .paths = .{
+        "",
+    },
+}

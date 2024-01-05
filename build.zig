@@ -1,5 +1,4 @@
 const std = @import("std");
-const deps = @import("deps.zig");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -20,9 +19,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = optimize,
+        .strip = true,
     });
-
-    exe.strip = true;
 
     const args_module = b.dependency("args", .{
         .optimize = optimize,
@@ -34,8 +32,8 @@ pub fn build(b: *std.Build) void {
         .target = target,
     });
 
-    exe.addModule("args", args_module.module("args"));
-    exe.addModule("archive", archive.module("archive"));
+    exe.root_module.addImport("args", args_module.module("args"));
+    exe.root_module.addImport("archive", archive.module("archive"));
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);

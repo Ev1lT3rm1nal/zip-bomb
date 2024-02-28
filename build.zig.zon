@@ -8,8 +8,8 @@
             .hash = "12203ded54c85878eea7f12744066dcb4397177395ac49a7b2aa365bf6047b623829",
         },
         .archive = .{
-            .url = "https://github.com/Ev1lT3rm1nal/zig-archive/archive/21f0f6ba99a88e8fbce073f2389e2928b5c8f0b6.tar.gz",
-            .hash = "1220b0442226bed7a5aefb7b0b42fb752949e08dbe5d36d1203bb3194f9c19efd943",
+            .url = "https://github.com/Ev1lT3rm1nal/zig-archive/archive/a21ab10cd5e8fe10dc78d4cf34f7a99150211b53.tar.gz",
+            .hash = "12203f31a759b746594eaa2d52981271073145e303f5b51c4ec43da9b7ff22ea6ff5",
         },
     },
 

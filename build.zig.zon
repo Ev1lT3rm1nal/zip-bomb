@@ -4,12 +4,12 @@
 
     .dependencies = .{
         .args = .{
-            .url = "https://github.com/MasterQ32/zig-args/archive/89f18a104d9c13763b90e97d6b4ce133da8a3e2b.tar.gz",
-            .hash = "12203ded54c85878eea7f12744066dcb4397177395ac49a7b2aa365bf6047b623829",
+            .url = "https://github.com/MasterQ32/zig-args/archive/872272205d95bdba33798c94e72c5387a31bc806.tar.gz",
+            .hash = "1220fe6ae56b668cc4a033282b5f227bfbb46a67ede6d84e9f9493fea9de339b5f37",
         },
         .archive = .{
-            .url = "https://github.com/Ev1lT3rm1nal/zig-archive/archive/a21ab10cd5e8fe10dc78d4cf34f7a99150211b53.tar.gz",
-            .hash = "12203f31a759b746594eaa2d52981271073145e303f5b51c4ec43da9b7ff22ea6ff5",
+            .url = "https://github.com/Ev1lT3rm1nal/zig-archive/archive/ea16a126f281901c2d8911b598488269e52e8392.tar.gz",
+            .hash = "12203a2ce7d1a072b52a612c62abfdb8a024846d93aee3a4f3f1f6653b4215589d94",
         },
     },
 
